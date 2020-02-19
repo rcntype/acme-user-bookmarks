@@ -1,4 +1,5 @@
 body {
+    display: flexbox;
     font-family: verdana;
 }
 
@@ -7,18 +8,27 @@ nav {
     justify-content: space-around;
 }
 
+form {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border: 1px solid black;
+    margin-top: 2rem;
+}
 .selected {
     background-color: lightblue;
     color: white;
     padding: 0.5rem;
     border-radius: 0.25rem;
 }
-form {
+ul>div {
     display: flex;
-    flex-direction: column;
-    padding: 1rem;
+    justify-content: space-around;
 }
-span {
-    margin-left: 5rem;
+.url {
+    list-style: none;
+}
+button {
+    background-color: lightgrey;
 }
   

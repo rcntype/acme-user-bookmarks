@@ -24,38 +24,6 @@ const fetchUser = async ()=> {
 
 
 
-
-const Nav = ({path, bookmarks}) => {
-    let categories = []
-    return (
-        <nav>{
-            bookmarks.map(bm => {
-                if (!categories.includes(bm.category)) {
-                    categories.push(bm.category)
-                    console.log(categories)
-                    return (
-                        <Link to={bm.category} key={bm.category}>{bm.category}</Link>
-                    )
-
-                }
-                
-            })
-        }</nav>
-    )
-}
-
-const BookmarkURLs = ({bookmarks}) => {
-    return (
-        <ul>{
-            bookmarks.map(eachMark => {
-                return (
-                    <li key={eachMark.id}>{eachMark.url}<span>Destroy</span></li>
-                )
-            })        
-        }</ul>
-    )
-}
-
 class Form extends Component {
     constructor() {
         super()
@@ -71,18 +39,52 @@ class Form extends Component {
 
     }
     render() {
-        const {url, category, bookmarks} = this.state
+        const {url, category} = this.state
+        const {create} = this
         return (
             <div>
                 <form onSubmit={(ev)=> ev.preventDefault()}>
                     <input value={url} placeholder='url' onChange={(ev)=> this.setState({url: ev.target.value})}/>
                     <input value={category} placeholder='category' onChange={(ev)=> this.setState({category: ev.target.value})}/>
-                    <button onClick={this.create}>Create</button>
+                    <button onClick={create}>Create</button>
                 </form>
-                {/* <BookmarkURLs bookmarks={bookmarks}/> */}
             </div>
         )
     }
+}
+
+
+
+const BookmarkURLs = ({bookmarks, destroy, create, match}) => {
+    const filter = match.params.filter
+    let filtered = bookmarks
+    if(filter){
+        filtered = filtered.filter(bmurl => {
+            if (filter === bmurl.category) {
+                return bmurl
+            }
+        })
+    }
+    return (
+        <main>
+            <nav>
+                <Link to='/video' className={filter === 'video' ? 'selected': ''}>Video</Link>
+                <Link to='/forum' className={filter === 'forum' ? 'selected': ''}>Forum</Link>
+                <Link to='/news' className={filter === 'news' ? 'selected': ''}>News</Link>
+            </nav>
+            <Form create={create}/>
+            <ul>{
+                filtered.map((eachMark, idx) => {
+                    return (
+                        <div key={idx} className='url'>
+                            <Link to='/'>{eachMark.url}</Link>
+                            <button onClick={()=> destroy(eachMark)}>Destroy</button>
+                        </div>     
+                    )
+                })        
+            }</ul>  
+        </main>
+    )
 }
 
 
@@ -116,28 +118,18 @@ class App extends Component {
         this.setState({ bookmarks : this.state.bookmarks.map( bm => bm.id === updated.id ? updated : bm)});
       }
 
-    async destroy(bookmarks) {
-        await axios.delete(`${API}/users/${this.state.user.id}/bookmarks/${bookmarks.id}`);
-        this.setState({ bookmarks : this.state.bookmarks.filter( _bm => _bm.id !== bookmarks.id)});
+    async destroy(bookmark) {
+        await axios.delete(`${API}/users/${this.state.user.id}/bookmarks/${bookmark.id}`);
+        this.setState({ bookmarks : this.state.bookmarks.filter( _bm => _bm.id !== bookmark.id)});
     }
 
     render() {
         const {user, bookmarks} = this.state
-        const {destroy, create, update} = this
-        console.log('App state', this.state)
+        const {destroy, create} = this
         return (
             <HashRouter>
                 <h2> {user.fullName} ({bookmarks.length} Bookmarks)</h2>
-                <Route render={(location) => <Nav path={location.pathname} bookmarks={bookmarks}/>}/>
-                <Route render={()=> <Form create={create} update={update} bookmarks={bookmarks}/>}/>
-                <Switch>
-                    <Route path={bookmarks.category} render={()=> <BookmarkURLs bookmarks={bookmarks}/>}/>
-                        
-                    
-
-
-
-                </Switch>
+                <Route path='/:filter?' render={(props) => <BookmarkURLs {...props} bookmarks={bookmarks} destroy={destroy} create={create}/>}/>
             </HashRouter>
 
             
